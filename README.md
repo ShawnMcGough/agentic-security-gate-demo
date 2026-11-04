@@ -12,10 +12,10 @@ feature branch is an educational example, not production-ready code.**
 
 1. Show `SECURITY_STANDARD.md`, then `directory.py`: a Python standard-library
    SQLite directory with three made-up employees and no network service.
-2. Open the two [demo PRs](https://github.com/ShawnMcGough/agentic-security-gate-demo/pulls).
-   Both add the same exact-name search feature:
-   `demo/safe-search` binds the name as a SQL parameter;
-   `demo/unsafe-search` interpolates it into SQL.
+2. Open [safe search PR #1](https://github.com/ShawnMcGough/agentic-security-gate-demo/pull/1)
+   and [unsafe search PR #2](https://github.com/ShawnMcGough/agentic-security-gate-demo/pull/2).
+   Both add the same exact-name search feature: `demo/safe-search` binds the
+   name as a SQL parameter; `demo/unsafe-search` interpolates it into SQL.
 3. In each PR, open **Checks > Security review**. Read the model's policy
    reasoning and reviewed commit SHA. The safe PR should be merge-eligible;
    the unsafe PR should be blocked with a SQL-injection finding.
