@@ -82,13 +82,17 @@ is instructed to fail that old review; use the new commit's run instead.
 - The model reads policy at the event's base SHA and code at the event's head
   SHA. Omitting the check handler's `target` binds its output to that same
   immutable head, rather than looking up a possibly newer head at publish time.
-- The framework keeps its firewall, integrity filtering, and output safety
+- The framework keeps its firewall, threat detection, and output safety
   defaults. Its separate output/conclusion jobs receive `checks: write`;
   framework diagnostics also receive `issues: write`. The agent receives only
-  read access plus permission to request Copilot inference. GitHub reads are
-  scoped to this repository with `approved` integrity; `ShawnMcGough` is the
-  explicitly trusted demo author. A filtered read must fail the review, not
-  cause the agent to work around the filter.
+  read access plus permission to request Copilot inference.
+- **Explicit, approved demo trade-off:** GitHub reads use `min-integrity: none`
+  with an allowlist containing only this repository. The released framework
+  labels PR diffs as untrusted even for the owner, so its public-repo default
+  (`approved`) blocks code review. This exception lets the model inspect
+  untrusted source; it does not authorize executing it or following embedded
+  instructions. Do not copy this setting into a broader repository allowlist.
+  A filtered read must still fail rather than be routed through another endpoint.
 - The active main ruleset requires a PR and **Security review** from the
   observed publishing GitHub App, with no bypass actors, force pushes, or
   deletion. Branches must be up to date with main before merging. PR creation

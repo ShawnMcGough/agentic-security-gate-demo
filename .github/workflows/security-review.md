@@ -21,8 +21,8 @@ tools:
     toolsets: [repos, pull_requests]
     allowed: [get_file_contents, pull_request_read]
     allowed-repos: [shawnmcgough/agentic-security-gate-demo]
-    min-integrity: approved
-    trusted-users: [shawnmcgough]
+    # Reviewing candidate code requires reading untrusted content, in this repo only.
+    min-integrity: none
 safe-outputs:
   create-check-run:
     name: Security review
