@@ -85,10 +85,14 @@ is instructed to fail that old review; use the new commit's run instead.
 - The framework keeps its firewall, integrity filtering, and output safety
   defaults. Its separate output/conclusion jobs receive `checks: write`;
   framework diagnostics also receive `issues: write`. The agent receives only
-  read access plus permission to request Copilot inference.
+  read access plus permission to request Copilot inference. GitHub reads are
+  scoped to this repository with `approved` integrity; `ShawnMcGough` is the
+  explicitly trusted demo author. A filtered read must fail the review, not
+  cause the agent to work around the filter.
 - The active main ruleset requires a PR and **Security review** from the
   observed publishing GitHub App, with no bypass actors, force pushes, or
-  deletion. PR creation remains allowed; merging is the boundary.
+  deletion. Branches must be up to date with main before merging. PR creation
+  remains allowed; merging is the boundary.
 - **This is a trusted-maintainer teaching demo, not tamper-proof enforcement.**
   LLM findings can vary or miss vulnerabilities. The prompt requires success
   or failure, but the native handler also accepts neutral/skipped conclusions,
