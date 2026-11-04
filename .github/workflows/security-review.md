@@ -20,6 +20,9 @@ tools:
     mode: local
     toolsets: [repos, pull_requests]
     allowed: [get_file_contents, pull_request_read]
+    allowed-repos: [shawnmcgough/agentic-security-gate-demo]
+    min-integrity: approved
+    trusted-users: [shawnmcgough]
 safe-outputs:
   create-check-run:
     name: Security review
@@ -37,6 +40,8 @@ the trusted base commit is `${{ github.event.pull_request.base.sha }}`.
 2. Use `pull_request_read` to get PR metadata, all changed files, and the diff.
    Confirm its head SHA equals the candidate SHA before AND after reading the
    diff. If it changed, report failure: this event can no longer be reviewed.
+   If a tool refuses a read because of an integrity policy, do not work around
+   that refusal through another endpoint; report an incomplete-review failure.
 3. Read the full changed application files and any needed context using
    `get_file_contents` with `ref` set to the candidate SHA. Read deleted files
    at the base SHA. Review every changed file; do not rely on truncated diffs.
