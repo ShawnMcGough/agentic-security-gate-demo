@@ -10,14 +10,19 @@ feature branch is an educational example, not production-ready code.**
 
 ## Which GitHub features do what?
 
-| Feature | Role in this demo |
-|---|---|
-| **GitHub Agentic Workflows (`gh-aw`)** | GitHub's open-source framework, compiler, and runtime. Compiles our Markdown instructions plus YAML frontmatter into an Actions `.lock.yml` workflow. Its built-in safe-output `create-check-run` handler publishes the verdict without a custom reporter. |
-| **Copilot CLI / engine** | Performs the LLM reasoning: reads candidate code against `SECURITY_STANDARD.md` and decides which policy findings to report. |
-| **GitHub Actions** | Responds to PR events, orchestrates jobs on hosted runners, and supplies job permissions and the per-run `GITHUB_TOKEN`. Copilot entitlement and usage/billing requirements still apply; see prerequisites below. |
-| **GitHub Checks** | Displays the named **Security review** success/failure and explanation on the PR's commit. A successful workflow execution is **not** necessarily a passing security verdict. |
-| **Branch ruleset: required status check** | **Enforces the merge gate.** Requires **Security review** from the configured publishing App before merging to `main`, alongside the other rules. Neither Markdown nor the agent alone blocks merges; PR creation remains allowed. |
-| **Our repository-authored configuration** | Supplies the policy, review instructions/frontmatter, sample app, and demo settings. Generated lock YAML and framework machinery are not hand-maintained custom gate code. |
+**Not every feature is required just to trigger and run an LLM review.** That
+needs a trigger/execution mechanism, access to the PR content, and an accessible
+model with authentication. Reporting the verdict and enforcing merge rules are
+separate concerns; this demo combines all three.
+
+| Feature | Role in this demo | Problem it solves |
+|---|---|---|
+| **GitHub Agentic Workflows (`gh-aw`)** | GitHub's open-source framework/compiler/runtime: compiles Markdown plus YAML frontmatter into Actions `.lock.yml`; its built-in safe-output `create-check-run` publishes the verdict. | Provides Markdown authoring, guarded agent execution, and result publishing without custom orchestration/reporter code. **Framework choice**, not a prerequisite for every LLM PR review. |
+| **Copilot CLI / engine** | Performs LLM reasoning against `SECURITY_STANDARD.md` and reports policy findings. | Interprets code against review criteria. **An LLM is necessary; Copilot specifically is substitutable.** Model access/authentication and usage budget are still needed. |
+| **GitHub Actions** | Handles PR events, hosted-runner jobs, job permissions, and the per-run `GITHUB_TOKEN`; see prerequisites for Copilot entitlement/billing. | Automatically starts and runs the review. **Execution is necessary, Actions specifically is not**; a webhook-driven app could provide it instead. |
+| **GitHub Checks** | Shows **Security review** success/failure and explanation on the PR commit. Workflow execution success is **not** necessarily a security pass. | Publishes a commit-bound, machine-readable verdict for this required-check approach. **Not needed for review alone**; comments or logs could report findings instead. |
+| **Branch ruleset: required status check** | Requires **Security review** from the configured App before merging to `main`, alongside the other rules. PR creation remains allowed. | **Enforces merging, not review execution.** A ruleset or equivalent branch protection is needed for enforceable required-check gating; publishing a check alone does not block merges. |
+| **Our repository-authored configuration** | Supplies policy, instructions/frontmatter, sample app, and demo settings; generated lock YAML/framework machinery is not hand-maintained gate code. | Defines evaluation criteria **needed for this standards-based goal**, not every generic code review. GitHub does not automatically recognize or enforce an arbitrary Markdown policy file. |
 
 **Flow:** PR -> Actions / Agentic Workflow -> Copilot policy review ->
 native **Security review** check -> ruleset permits or blocks merge.
