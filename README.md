@@ -24,8 +24,53 @@ separate concerns; this demo combines all three.
 | **Branch ruleset: required status check** | Requires **Security review** from the configured App before merging to `main`, alongside the other rules. PR creation remains allowed. | **Enforces merging, not review execution.** A ruleset or equivalent branch protection is needed for enforceable required-check gating; publishing a check alone does not block merges. |
 | **Our repository-authored configuration** | Supplies policy, instructions/frontmatter, sample app, and demo settings; generated lock YAML/framework machinery is not hand-maintained gate code. | Defines evaluation criteria **needed for this standards-based goal**, not every generic code review. GitHub does not automatically recognize or enforce an arbitrary Markdown policy file. |
 
-**Flow:** PR -> Actions / Agentic Workflow -> Copilot policy review ->
-native **Security review** check -> ruleset permits or blocks merge.
+### Review flow and merge enforcement
+
+The main review path below follows job dependencies, not their order in the
+generated YAML. Job conditions can skip work; `conclusion` finalizes run status
+and diagnostics rather than deciding whether the application meets the policy.
+
+```mermaid
+flowchart TD
+    PR["PR opened or updated<br/>pull_request_target"] --> PRE
+    subgraph AW["GitHub Actions / Agentic Workflows runtime"]
+        PRE["pre_activation<br/>Admit trusted-writer role"] --> ACT
+        ACT["activation<br/>Prepare trusted instructions and context"] --> AGENT
+        AGENT["agent / Copilot<br/>Review base-SHA policy against head-SHA code<br/>Scoped read-only tools; never execute candidate code"] --> DET
+        DET["detection<br/>Agent-output threat analysis"] --> SAFE
+        SAFE["safe_outputs<br/>Built-in create-check-run handler"]
+        SAFE -.-> CONC["conclusion<br/>Finalize run status and diagnostics"]
+    end
+    SAFE --> CHECK["Native Security review check<br/>Bound to the event PR head SHA"]
+    CHECK --> RULE{"Outside the workflow: main ruleset<br/>Required check and other requirements"}
+    RULE -->|"Failing or missing required check"| BLOCK["Merge blocked"]
+    RULE -->|"Passing check and all other requirements met"| ALLOW["Merge permitted, not automatic"]
+```
+
+`detection` analyzes **agent outputs**, not the application against our security
+standard. Its warning/continue-on-error behavior does not guarantee that every
+detection problem blocks publishing. A framework run can succeed while the
+separate **Security review** policy check fails; the ruleset enforces that check.
+
+### Where is the Copilot model selected?
+
+[`security-review.md`](.github/workflows/security-review.md) sets
+`engine: copilot`, selecting the engine without pinning a model. In the
+[generated workflow's agent job](.github/workflows/security-review.lock.yml#L994),
+`COPILOT_MODEL` uses the first non-empty value in this order:
+**`GH_AW_MODEL_AGENT_COPILOT` -> `GH_AW_DEFAULT_MODEL_COPILOT` -> `auto`**.
+`auto` is a runtime selector, not a fixed underlying model name.
+
+These `GH_AW_*` overrides are **Actions configuration variables**, configured
+under **Settings > Secrets and variables > Actions > Variables**, not secrets
+or Markdown policy content. This personally owned repository's jobs do not
+select an Actions environment. Do not hand-edit the generated lock YAML.
+
+The [separate detection job](.github/workflows/security-review.lock.yml#L1753)
+uses `GH_AW_MODEL_DETECTION_COPILOT` -> `GH_AW_DEFAULT_MODEL_COPILOT` ->
+`detection`. Its configured fallback keeps the same variable precedence but
+uses `auto` instead of `detection` when neither override is set. The review and
+output-analysis jobs therefore need not use the same model.
 
 ### Is this out of the box?
 
