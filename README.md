@@ -8,6 +8,33 @@ A main-branch ruleset requires that result, not merely a successful workflow.
 **Synthetic data only. Do not deploy this application. The intentionally unsafe
 feature branch is an educational example, not production-ready code.**
 
+## Which GitHub features do what?
+
+| Feature | Role in this demo |
+|---|---|
+| **GitHub Agentic Workflows (`gh-aw`)** | GitHub's open-source framework, compiler, and runtime. Compiles our Markdown instructions plus YAML frontmatter into an Actions `.lock.yml` workflow. Its built-in safe-output `create-check-run` handler publishes the verdict without a custom reporter. |
+| **Copilot CLI / engine** | Performs the LLM reasoning: reads candidate code against `SECURITY_STANDARD.md` and decides which policy findings to report. |
+| **GitHub Actions** | Responds to PR events, orchestrates jobs on hosted runners, and supplies job permissions and the per-run `GITHUB_TOKEN`. Copilot entitlement and usage/billing requirements still apply; see prerequisites below. |
+| **GitHub Checks** | Displays the named **Security review** success/failure and explanation on the PR's commit. A successful workflow execution is **not** necessarily a passing security verdict. |
+| **Branch ruleset: required status check** | **Enforces the merge gate.** Requires **Security review** from the configured publishing App before merging to `main`, alongside the other rules. Neither Markdown nor the agent alone blocks merges; PR creation remains allowed. |
+| **Our repository-authored configuration** | Supplies the policy, review instructions/frontmatter, sample app, and demo settings. Generated lock YAML and framework machinery are not hand-maintained custom gate code. |
+
+**Flow:** PR -> Actions / Agentic Workflow -> Copilot policy review ->
+native **Security review** check -> ruleset permits or blocks merge.
+
+### Is this out of the box?
+
+**Existing building blocks, yes; a zero-configuration policy gate, no.** This
+uses GitHub features and a framework-provided output handler, with no custom
+`.mjs` detector, parser, or reporter. It is not an automatically enabled or
+one-toggle Copilot feature that enforces arbitrary Markdown security policies.
+We install and compile `gh-aw`, configure the workflow and model access, author
+the policy, and configure the required-check ruleset.
+
+This is **not ordinary Copilot code-review comments, CodeQL, or Copilot
+Autofix**. It is a configured agentic policy review feeding a native merge
+requirement, with the trusted-writer scope and limitations documented below.
+
 ## Presenter walkthrough
 
 1. Show `SECURITY_STANDARD.md`, then `directory.py`: a Python standard-library
@@ -111,4 +138,5 @@ is instructed to fail that old review; use the new commit's run instead.
 
 References: [Agentic Workflows](https://github.github.com/gh-aw/),
 [native check output](https://github.github.com/gh-aw/reference/safe-outputs/#check-run-creation-create-check-run),
-[Copilot CLI in Actions](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli-in-actions).
+[Copilot CLI in Actions](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli-in-actions),
+[required status checks in rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#require-status-checks-to-pass).
